@@ -76,8 +76,9 @@ export default function SeriesPage() {
   );
 
   return (
-    <main className="min-h-screen">
-      <div className="relative h-[50vh] min-h-[300px]">
+    <>
+      <main className="min-h-screen">
+        <div className="relative h-[50vh] min-h-[300px]">
         {content.backdropUrl ? (
           <img
             src={content.backdropUrl}
@@ -163,6 +164,7 @@ export default function SeriesPage() {
           ← חזרה
         </button>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
