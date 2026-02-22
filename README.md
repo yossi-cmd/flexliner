@@ -50,7 +50,12 @@ npm run dev
    - `NEXTAUTH_SECRET` – מחרוזת אקראית (למשל `openssl rand -base64 32`).
    - `NEXTAUTH_URL` – כתובת האתר בפרודקשן (למשל `https://xxx.vercel.app`).
 
-3. **Redeploy** – אחרי שמירת המשתנים, בצע Redeploy ל-deployment האחרון.
+3. **קבצים מועלים (CDN)** – כדי שקבצים שמועלים יישמרו ב-CDN ולא יאבדו ב-deploy:
+   - ב-Vercel: Storage → Create Database → **Blob**, צור Blob store (למשל "uploads").
+   - המשתנה `BLOB_READ_WRITE_TOKEN` מתווסף אוטומטית. מקומית: `vercel env pull` או העתק מ-Vercel.
+   - העלאות יעברו אוטומטית ל-Blob (כתובות `https://...blob.vercel-storage.com/...`). בלי המשתנה – העלאה תישאר לדיסק המקומי בלבד.
+
+4. **Redeploy** – אחרי שמירת המשתנים, בצע Redeploy ל-deployment האחרון.
 
 ## מבנה קצר
 
@@ -63,4 +68,4 @@ npm run dev
 ## הערות
 
 - השימוש באתר ללא הרשמה: היסטוריית צפייה ו"אהבתי" נשמרות ב-`localStorage` לשיפור ההמלצות.
-- העלאת תוכן: כרגע מזינים **קישורים** לתמונות ולוידאו (URLs). לא מועלים קבצים לשרת.
+- העלאת תוכן: אפשר להזין **קישור** או **להעלות קובץ**. עם Vercel Blob (`BLOB_READ_WRITE_TOKEN`) הקבצים נשמרים ב-CDN; בלי – נשמרים מקומית ב-`public/uploads`.

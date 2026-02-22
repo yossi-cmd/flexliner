@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { upload as uploadToBlob } from "@vercel/blob/client";
 
 type Props = {
   value: string;
@@ -10,6 +11,8 @@ type Props = {
   className?: string;
   id?: string;
 };
+
+const base = typeof window !== "undefined" ? "" : process.env.NEXT_PUBLIC_APP_URL || "";
 
 export default function UrlOrUploadInput({
   value,
@@ -27,9 +30,24 @@ export default function UrlOrUploadInput({
     if (!file) return;
     setUploading(true);
     try {
+      // 1. Try Vercel Blob (CDN) when configured
+      try {
+        const blob = await uploadToBlob(file.name, file, {
+          access: "public",
+          handleUploadUrl: `${base}/api/upload/blob`,
+        });
+        if (blob?.url) {
+          onChange(blob.url);
+          e.target.value = "";
+          return;
+        }
+      } catch {
+        // Blob not configured or failed → fallback to local upload
+      }
+
+      // 2. Fallback: upload to server (local disk)
       const formData = new FormData();
       formData.set("file", file);
-      const base = typeof window !== "undefined" ? "" : process.env.NEXT_PUBLIC_APP_URL || "";
       const res = await fetch(`${base}/api/upload`, {
         method: "POST",
         body: formData,
