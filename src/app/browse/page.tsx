@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ContentCard from "@/components/ContentCard";
 import Link from "next/link";
@@ -22,7 +22,7 @@ type Content = {
 
 type Category = { id: string; name: string; slug: string; order: number };
 
-export default function BrowsePage() {
+function BrowsePageContent() {
   const searchParams = useSearchParams();
   const q = searchParams.get("q");
   const [content, setContent] = useState<Content[]>([]);
@@ -210,5 +210,21 @@ export default function BrowsePage() {
         </div>
       )}
     </main>
+  );
+}
+
+function BrowseLoading() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="w-10 h-10 border-2 border-flexliner-red border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
+
+export default function BrowsePage() {
+  return (
+    <Suspense fallback={<BrowseLoading />}>
+      <BrowsePageContent />
+    </Suspense>
   );
 }
