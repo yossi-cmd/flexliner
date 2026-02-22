@@ -70,9 +70,10 @@ export default function SeriesPage() {
   }
 
   const firstEpisode = content.episodes[0];
-  const seasons = Array.from(
-    new Set(content.episodes.map((e) => e.season))
-  ).sort((a, b) => a - b);
+  const seasonNumbers = content.episodes.map((e) => e.season);
+  const seasons = Array.from(new Set(seasonNumbers)).sort(
+    (a, b) => a - b
+  );
 
   return (
     <main className="min-h-screen">
