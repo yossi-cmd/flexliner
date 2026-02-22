@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
@@ -7,7 +8,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type");
     const categoryId = searchParams.get("categoryId");
 
-    const where: { type?: string; categories?: { categoryId: string } } = {};
+    const where: Prisma.ContentWhereInput = {};
     if (type) where.type = type;
     if (categoryId) where.categories = { some: { categoryId } };
 
