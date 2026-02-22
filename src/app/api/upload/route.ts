@@ -14,6 +14,17 @@ function safeName(original: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // On Vercel there is no writable filesystem – uploads must use Blob (CDN)
+    if (process.env.VERCEL === "1") {
+      return NextResponse.json(
+        {
+          error:
+            "העלאת קבצים בפרודקשן דורשת הגדרת Vercel Blob (Storage → Blob). ודא ש-BLOB_READ_WRITE_TOKEN מוגדר.",
+        },
+        { status: 503 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get("file");
     if (!file || !(file instanceof File)) {
