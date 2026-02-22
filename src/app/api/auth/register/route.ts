@@ -44,9 +44,10 @@ export async function POST(request: NextRequest) {
       role: user.role,
     });
   } catch (e) {
-    console.error(e);
+    console.error("[register]", e);
+    const message = e instanceof Error ? e.message : "שגיאה ביצירת משתמש";
     return NextResponse.json(
-      { error: "שגיאה ביצירת משתמש" },
+      { error: "שגיאה ביצירת משתמש", details: process.env.NODE_ENV === "development" ? message : undefined },
       { status: 500 }
     );
   }

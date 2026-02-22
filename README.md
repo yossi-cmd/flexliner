@@ -17,7 +17,7 @@
 ```bash
 npm install
 cp .env.example .env
-# ערוך .env והוסף OPENAI_API_KEY=sk-...
+# ערוך .env: DATABASE_URL (Postgres מ-Neon), OPENAI_API_KEY, NEXTAUTH_SECRET, NEXTAUTH_URL
 npx prisma generate
 npx prisma db push
 npm run dev
@@ -33,9 +33,24 @@ npm run dev
 
 | משתנה | תיאור |
 |--------|--------|
-| `DATABASE_URL` | קישור למסד הנתונים (ברירת מחדל: `file:./dev.db` ל-SQLite) |
+| `DATABASE_URL` | קישור ל-Postgres (למשל מ-[Neon](https://neon.tech)) |
 | `OPENAI_API_KEY` | מפתח API של OpenAI להמלצות ולאפיון תוכן |
-| `NEXT_PUBLIC_APP_URL` | (אופציונלי) כתובת בסיס של האתר לשימוש ב-API מהלקוח, למשל `http://localhost:3000` |
+| `NEXTAUTH_SECRET` | מחרוזת אקראית לסימון sessions (בפרודקשן חובה) |
+| `NEXTAUTH_URL` | כתובת האתר, למשל `https://הדומיין.vercel.app` |
+| `NEXT_PUBLIC_APP_URL` | (אופציונלי) כתובת בסיס של האתר לשימוש ב-API מהלקוח |
+
+## פריסה ל-Vercel (עם מסד נתונים)
+
+1. **מסד נתונים בענן** – הפרויקט משתמש ב-Postgres. צור מסד חינמי ב-[Neon](https://neon.tech):
+   - צור פרויקט והעתק את ה-Connection string.
+   - מקומית: שים ב-`.env` את `DATABASE_URL=postgresql://...` והרץ `npx prisma db push`.
+   - ב-Vercel: Settings → Environment Variables → הוסף `DATABASE_URL` עם אותו connection string.
+
+2. **NextAuth** – ב-Vercel הוסף:
+   - `NEXTAUTH_SECRET` – מחרוזת אקראית (למשל `openssl rand -base64 32`).
+   - `NEXTAUTH_URL` – כתובת האתר בפרודקשן (למשל `https://xxx.vercel.app`).
+
+3. **Redeploy** – אחרי שמירת המשתנים, בצע Redeploy ל-deployment האחרון.
 
 ## מבנה קצר
 
