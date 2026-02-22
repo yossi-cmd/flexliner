@@ -16,7 +16,7 @@ type Content = {
   releaseYear: number | null;
   duration: number | null;
   rating: string | null;
-  categories: { category: { name: string } }[];
+  categories: { category: { id: string; name: string; slug: string } }[];
   episodes: { id: string; season: number; number: number; title: string }[];
 };
 
