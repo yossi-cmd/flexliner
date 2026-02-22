@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id    String   @id @default(cuid())
+  name  String
+  slug  String   @unique
+  order Int      @default(0)
+  contents CategoryOnContent[]
+}
+
+model Content {
+  id             String    @id @default(cuid())
+  title          String
+  titleEn        String?
+  description    String?
+  type           String    // "movie" | "series"
+  posterUrl      String?
+  backdropUrl    String?
+  releaseYear    Int?
+  duration       Int?      // minutes for movie
+  rating         String?
+  videoUrl       String?   // for movie - single video
+  subtitleTracks String?   // JSON: [{label, src, lang}]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  aiProfile      String?   // AI-generated characterization
+  categories     CategoryOnContent[]
+  episodes       Episode[]
+}
+
+model CategoryOnContent {
+  categoryId String
+  contentId  String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  content    Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  @@id([categoryId, contentId])
+}
+
+model Episode {
+  id             String   @id @default(cuid())
+  contentId      String
+  content        Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  season         Int      @default(1)
+  number         Int
+  title          String
+  videoUrl       String
+  subtitleTracks String?  // JSON: [{label, src, lang}]
+  duration       Int?
+  createdAt      DateTime @default(now())
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         String   // "admin" | "viewer"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
