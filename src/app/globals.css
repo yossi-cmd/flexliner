@@ -105,9 +105,6 @@ body {
 .content-row .content-card {
   transition: transform 0.2s ease, z-index 0.2s;
 }
-.content-row:hover .content-card {
-  transform: scale(1.05);
-}
 .content-row .content-card:hover {
   transform: scale(1.12);
   z-index: 10;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "@/components/Providers";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "פלקסליינר - סרטים וסדרות",
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="he" dir="rtl">
       <body className="antialiased min-h-screen bg-flexliner-black">
         <Providers>{children}</Providers>
+        <Analytics />
         <footer>
           <p className="text-center text-white/50 text-sm">נבנה על ידי יוסי ביטון, למטרות בידור בלבד, ולא על מנת לזלזל ברב מנחם אדרי צדיק יסוד עולם ח״ו.</p>
         </footer>
