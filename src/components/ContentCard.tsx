@@ -35,7 +35,7 @@ export default function ContentCard({ content }: { content: Content }) {
             אין תמונה
           </div>
         )}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 group-hover:scale-105 scale-100 transition-colors" />
       </div>
       <div className="p-2">
         <p className="font-medium text-white truncate">{content.title}</p>
