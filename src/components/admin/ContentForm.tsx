@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import UrlOrUploadInput from "@/components/UrlOrUploadInput";
+import SubtitleEditorModal from "@/components/admin/SubtitleEditorModal";
 
 type Category = { id: string; name: string; slug: string };
 type SubtitleTrack = { label: string; src: string; lang: string };
@@ -31,6 +32,7 @@ export default function ContentForm({ contentId, onSaved, onCancel }: Props) {
     subtitleTracks: [] as SubtitleTrack[],
   });
   const [newSubSrc, setNewSubSrc] = useState("");
+  const [editSubtitleIndex, setEditSubtitleIndex] = useState<number | null>(null);
 
   const base = typeof window !== "undefined" ? "" : process.env.NEXT_PUBLIC_APP_URL || "";
 
@@ -224,9 +226,16 @@ export default function ContentForm({ contentId, onSaved, onCancel }: Props) {
           <label className="block text-sm text-white/70 mb-2">כתוביות (קבצי VTT)</label>
           <p className="text-white/50 text-xs mb-2">הוסף מסלולי כתוביות: תווית (למשל עברית), קוד שפה (he/en), קישור לקובץ .vtt</p>
           {form.subtitleTracks.map((t, i) => (
-            <div key={i} className="flex items-center gap-2 mb-2 p-2 rounded bg-white/5">
+            <div key={i} className="flex flex-wrap items-center gap-2 mb-2 p-2 rounded bg-white/5">
               <span className="text-sm">{t.label}</span>
               <span className="text-white/50 text-xs">({t.lang})</span>
+              <button
+                type="button"
+                onClick={() => setEditSubtitleIndex(i)}
+                className="text-flexliner-red text-sm hover:underline"
+              >
+                ערוך קובץ
+              </button>
               <button
                 type="button"
                 onClick={() => setForm((p) => ({ ...p, subtitleTracks: p.subtitleTracks.filter((_, j) => j !== i) }))}
@@ -236,6 +245,21 @@ export default function ContentForm({ contentId, onSaved, onCancel }: Props) {
               </button>
             </div>
           ))}
+          {editSubtitleIndex !== null && form.subtitleTracks[editSubtitleIndex] && (
+            <SubtitleEditorModal
+              track={form.subtitleTracks[editSubtitleIndex]}
+              onSave={(newSrc) => {
+                setForm((p) => ({
+                  ...p,
+                  subtitleTracks: p.subtitleTracks.map((t, j) =>
+                    j === editSubtitleIndex ? { ...t, src: newSrc } : t
+                  ),
+                }));
+                setEditSubtitleIndex(null);
+              }}
+              onClose={() => setEditSubtitleIndex(null)}
+            />
+          )}
           <div className="flex flex-wrap gap-2 mb-2 items-end">
             <input
               type="text"

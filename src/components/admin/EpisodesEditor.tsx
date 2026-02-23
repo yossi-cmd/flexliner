@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import UrlOrUploadInput from "@/components/UrlOrUploadInput";
+import SubtitleEditorModal from "@/components/admin/SubtitleEditorModal";
 
 type SubtitleTrack = { label: string; src: string; lang: string };
 
@@ -159,6 +160,7 @@ function EpisodeRow({
   const [showSubs, setShowSubs] = useState(false);
   const [tracks, setTracks] = useState<SubtitleTrack[]>(() => parseSubtitleTracks(episode.subtitleTracks));
   const [saving, setSaving] = useState(false);
+  const [editTrackIndex, setEditTrackIndex] = useState<number | null>(null);
   const [newLabel, setNewLabel] = useState("");
   const [newLang, setNewLang] = useState("");
   const [newSrc, setNewSrc] = useState("");
@@ -204,9 +206,16 @@ function EpisodeRow({
         <div className="mt-2 pt-2 border-t border-white/10">
           <p className="text-white/60 text-xs mb-2">מסלולי כתוביות (VTT) – תווית, שפה, קישור</p>
           {tracks.map((t, i) => (
-            <div key={i} className="flex items-center gap-2 mb-1 text-sm">
+            <div key={i} className="flex flex-wrap items-center gap-2 mb-1 text-sm">
               <span>{t.label}</span>
               <span className="text-white/50">({t.lang})</span>
+              <button
+                type="button"
+                onClick={() => setEditTrackIndex(i)}
+                className="text-flexliner-red hover:underline"
+              >
+                ערוך קובץ
+              </button>
               <button
                 type="button"
                 onClick={() => setTracks((p) => p.filter((_, j) => j !== i))}
@@ -216,6 +225,18 @@ function EpisodeRow({
               </button>
             </div>
           ))}
+          {editTrackIndex !== null && tracks[editTrackIndex] && (
+            <SubtitleEditorModal
+              track={tracks[editTrackIndex]}
+              onSave={(newSrc) => {
+                setTracks((p) =>
+                  p.map((t, j) => (j === editTrackIndex ? { ...t, src: newSrc } : t))
+                );
+                setEditTrackIndex(null);
+              }}
+              onClose={() => setEditTrackIndex(null)}
+            />
+          )}
           <div className="flex flex-wrap gap-2 mb-2 items-end">
             <input
               type="text"
