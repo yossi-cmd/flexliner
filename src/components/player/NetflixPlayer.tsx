@@ -74,6 +74,15 @@ export default function NetflixPlayer({
     subtitleTracks.length > 0 ? 0 : null
   );
   const [showSubtitleMenu, setShowSubtitleMenu] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse)");
+    const check = () => setIsMobile(mq.matches);
+    check();
+    mq.addEventListener("change", check);
+    return () => mq.removeEventListener("change", check);
+  }, []);
 
   const video = videoRef.current;
 
@@ -169,13 +178,24 @@ export default function NetflixPlayer({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [togglePlay]);
 
-  const togglePlay = () => {
+  const togglePlay = useCallback(() => {
     if (!video) return;
-    if (video.paused) video.play();
-    else video.pause();
-  };
+    if (video.paused) {
+      const p = video.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(() => {
+          // לעיתים במובייל (iOS) נדרש fullscreen לפני הפעלה
+          if (isMobile && containerRef.current && !document.fullscreenElement) {
+            containerRef.current.requestFullscreen().then(() => video.play()).catch(() => {});
+          }
+        });
+      }
+    } else {
+      video.pause();
+    }
+  }, [video, isMobile]);
 
   const seek = (delta: number) => {
     if (!video) return;
@@ -325,8 +345,19 @@ export default function NetflixPlayer({
       {/* Video */}
       <div
         className="relative flex-1 flex items-center justify-center min-h-0 cursor-pointer"
-        onClick={togglePlay}
+        onClick={() => {
+          if (isMobile) {
+            setShowControls(true);
+            resetHideTimer();
+            return;
+          }
+          togglePlay();
+        }}
       >
+        {/* מובייל: כהה קלה כשמציגים פקדים */}
+        {isMobile && showControls && (
+          <div className="absolute inset-0 bg-black/25 z-[11] pointer-events-none" aria-hidden />
+        )}
         <video
           ref={videoRef}
           src={src}
@@ -336,6 +367,11 @@ export default function NetflixPlayer({
           className="max-w-full max-h-full w-full h-full object-contain netflix-player-video"
           onClick={(e) => {
             e.stopPropagation();
+            if (isMobile) {
+              setShowControls(true);
+              resetHideTimer();
+              return;
+            }
             togglePlay();
           }}
         >
@@ -350,14 +386,15 @@ export default function NetflixPlayer({
             />
           ))}
         </video>
+        {/* ספינר טעינה – לא חוסם לחיצות על כפתור ההפעלה */}
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none z-10">
             <div className="w-14 h-14 border-4 border-flexliner-red border-t-transparent rounded-full animate-spin" />
           </div>
         )}
-        {/* Center play/pause overlay */}
+        {/* Center play/pause overlay – תמיד לחיץ כשלא מנגן */}
         <div
-          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 z-20 ${
             showControls && !isPlaying ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
         >
@@ -367,14 +404,26 @@ export default function NetflixPlayer({
               e.stopPropagation();
               togglePlay();
             }}
-            className="w-20 h-20 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors border border-white/30"
+            className="w-20 h-20 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors border border-white/30 touch-manipulation"
             aria-label={isPlaying ? "השהה" : "הפעל"}
           >
             <Play className="w-10 h-10 text-white mr-1" fill="currentColor" />
           </button>
         </div>
+        {/* מובייל: כשמנגן בלי פקדים – לחיצה מציגה פקדים + כפתור השהה (לא עוצרת מיד) */}
         {isPlaying && !showControls && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+          <div
+            className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-20 touch-manipulation"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isMobile) {
+                setShowControls(true);
+                resetHideTimer();
+                return;
+              }
+              togglePlay();
+            }}
+          >
             <button
               type="button"
               onClick={(e) => {
@@ -474,7 +523,7 @@ export default function NetflixPlayer({
             <button
               type="button"
               onClick={() => seek(-10)}
-              className="flex items-center gap-1.5 px-2 py-1.5 text-white hover:text-white/90 font-medium tabular-nums"
+              className="hidden md:flex items-center gap-1.5 px-2 py-1.5 text-white hover:text-white/90 font-medium tabular-nums"
               aria-label="10 שניות אחורה"
             >
               <SkipBack className="w-5 h-5 shrink-0" />
@@ -483,14 +532,14 @@ export default function NetflixPlayer({
             <button
               type="button"
               onClick={() => seek(10)}
-              className="flex items-center gap-1.5 px-2 py-1.5 text-white hover:text-white/90 font-medium tabular-nums"
+              className="hidden md:flex items-center gap-1.5 px-2 py-1.5 text-white hover:text-white/90 font-medium tabular-nums"
               aria-label="10 שניות קדימה"
             >
               <SkipForward className="w-5 h-5 shrink-0" />
               <span>+10</span>
             </button>
 
-            <div className="flex items-center gap-2 text-white/90 text-sm">
+            <div className="flex items-center gap-2 text-white/90 text-sm min-w-0">
               <span>{formatTime(currentTime)}</span>
               <span>/</span>
               <span>{formatTime(duration)}</span>
@@ -541,8 +590,8 @@ export default function NetflixPlayer({
               </div>
             </div>
 
-            {/* Speed */}
-            <div className="relative">
+            {/* Speed – מוסתר במובייל כדי לפנות מקום */}
+            <div className="relative hidden md:block">
               <button
                 type="button"
                 onClick={() => setShowSpeedMenu((v) => !v)}
