@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import UrlOrUploadInput from "@/components/UrlOrUploadInput";
 import SubtitleEditorModal from "@/components/admin/SubtitleEditorModal";
+import AdminLivePreview from "@/components/admin/AdminLivePreview";
 
 type Category = { id: string; name: string; slug: string };
 type SubtitleTrack = { label: string; src: string; lang: string };
@@ -316,6 +317,9 @@ export default function ContentForm({ contentId, onSaved, onCancel }: Props) {
           ))}
         </div>
       </div>
+
+      <AdminLivePreview form={form} categories={categories} contentId={contentId} />
+
       <div className="flex gap-4">
         <button
           type="submit"
