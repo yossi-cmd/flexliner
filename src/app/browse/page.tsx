@@ -27,10 +27,7 @@ function BrowsePageContent() {
   const q = searchParams.get("q");
   const [content, setContent] = useState<Content[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [recommendations, setRecommendations] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
-  const [recommendQuery, setRecommendQuery] = useState("");
-  const [recommendLoading, setRecommendLoading] = useState(false);
 
   useEffect(() => {
     const base = process.env.NEXT_PUBLIC_APP_URL || "";
@@ -52,33 +49,6 @@ function BrowsePageContent() {
       .then(setContent)
       .catch(() => setContent([]));
   }, [q]);
-
-  const getRecommendations = () => {
-    if (!recommendQuery.trim()) return;
-    setRecommendLoading(true);
-    const base = process.env.NEXT_PUBLIC_APP_URL || "";
-    const watched: string[] = JSON.parse(
-      typeof window !== "undefined" ? localStorage.getItem("flexliner_watched") || "[]" : "[]"
-    );
-    const liked: string[] = JSON.parse(
-      typeof window !== "undefined" ? localStorage.getItem("flexliner_liked") || "[]" : "[]"
-    );
-    fetch(`${base}/api/ai/recommend`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: recommendQuery,
-        watchedIds: watched,
-        likedIds: liked,
-      }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setRecommendations(data);
-        setRecommendLoading(false);
-      })
-      .catch(() => setRecommendLoading(false));
-  };
 
   const byCategory = (categoryId: string) =>
     content.filter((c) =>
@@ -134,36 +104,6 @@ function BrowsePageContent() {
               </Link>
             </div>
           </div>
-        </section>
-      )}
-
-      {/* AI Recommendations */}
-      {!q && (
-        <section className="px-6 mb-10">
-          <h2 className="text-xl font-bold mb-4">המלצות לפי AI</h2>
-          <div className="flex flex-wrap gap-2 mb-4">
-            <input
-              type="text"
-              value={recommendQuery}
-              onChange={(e) => setRecommendQuery(e.target.value)}
-              placeholder="תאר מה בא לך לראות (למשל: קומדיה רומנטית, מתח)"
-              className="bg-white/10 border border-white/20 rounded px-4 py-2 w-80 max-w-full text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-flexliner-red"
-            />
-            <button
-              onClick={getRecommendations}
-              disabled={recommendLoading}
-              className="px-4 py-2 bg-flexliner-red rounded font-medium hover:bg-flexliner-red/90 disabled:opacity-50"
-            >
-              {recommendLoading ? "מחפש..." : "המלץ לי"}
-            </button>
-          </div>
-          {recommendations.length > 0 && (
-            <div className="content-row flex gap-4 overflow-x-auto pb-4">
-              {recommendations.map((c) => (
-                <ContentCard key={c.id} content={c} />
-              ))}
-            </div>
-          )}
         </section>
       )}
 

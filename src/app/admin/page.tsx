@@ -5,7 +5,7 @@ export default function AdminDashboard() {
     <div>
       <h1 className="text-3xl font-bold mb-6">דשבורד</h1>
       <p className="text-white/70 mb-8">
-        ניהול תוכן פלקסליינר. הוסף סרטים וסדרות, הגדר קטגוריות, וצור אפיון AI לתוכן.
+        ניהול תוכן פלקסליינר. הוסף סרטים וסדרות והגדר קטגוריות.
       </p>
       <div className="grid gap-4 sm:grid-cols-2 max-w-2xl">
         <Link
@@ -14,7 +14,7 @@ export default function AdminDashboard() {
         >
           <h2 className="text-xl font-semibold mb-2">תוכן</h2>
           <p className="text-white/60 text-sm">
-            העלאת סרטים וסדרות, עריכת פרטים, הוספת פרקים ואפיון AI.
+            העלאת סרטים וסדרות, עריכת פרטים והוספת פרקים.
           </p>
         </Link>
         <Link

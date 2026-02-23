@@ -102,11 +102,6 @@ export default function MoviePage() {
         {content.description && (
           <p className="text-white/90 mb-6">{content.description}</p>
         )}
-        {content.aiProfile && (
-          <p className="text-white/70 text-sm mb-6 border-r-4 border-flexliner-red pr-4">
-            {content.aiProfile}
-          </p>
-        )}
 
         {hasVideo ? (
           <Link
