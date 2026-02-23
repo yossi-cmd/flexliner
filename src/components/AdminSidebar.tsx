@@ -12,7 +12,7 @@ type Props = {
 export default function AdminSidebar({ open = true, onClose, className = "" }: Props) {
   return (
     <aside
-      className={`w-56 bg-flexliner-dark border-l border-white/10 flex flex-col p-4 gap-2 h-full ${className} ${
+      className={`w-56 bg-flexliner-dark border-l border-white/10 flex flex-col p-4 gap-2 ${className} ${
         onClose ? (open ? "flex" : "hidden md:flex") : ""
       }`}
       aria-hidden={onClose ? !open : undefined}
