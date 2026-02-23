@@ -87,8 +87,9 @@ export default function NetflixPlayer({
   const video = videoRef.current;
 
   useEffect(() => {
-    if (!video || subtitleTracks.length === 0) return;
-    const tracks = video.textTracks;
+    const v = videoRef.current;
+    if (!v || subtitleTracks.length === 0) return;
+    const tracks = v.textTracks;
     for (let i = 0; i < tracks.length; i++) {
       tracks[i].mode = activeSubtitle === i ? "showing" : "disabled";
     }
@@ -109,10 +110,12 @@ export default function NetflixPlayer({
     };
   }, []);
 
+  // חיבור ל-video רק אחרי mount – ref מתעדכן אחרי ה-commit אז רצים עם [] וקוראים ל-ref בתוך ה-effect
   useEffect(() => {
-    if (!video) return;
-    const onTimeUpdate = () => setCurrentTime(video.currentTime);
-    const onDurationChange = () => setDuration(video.duration);
+    const v = videoRef.current;
+    if (!v) return;
+    const onTimeUpdate = () => setCurrentTime(v.currentTime);
+    const onDurationChange = () => setDuration(v.duration);
     const onPlay = () => {
       setIsPlaying(true);
       setIsLoading(false);
@@ -122,23 +125,23 @@ export default function NetflixPlayer({
     const onCanPlay = () => setIsLoading(false);
     const onEnded = () => setIsPlaying(false);
 
-    video.addEventListener("timeupdate", onTimeUpdate);
-    video.addEventListener("durationchange", onDurationChange);
-    video.addEventListener("play", onPlay);
-    video.addEventListener("pause", onPause);
-    video.addEventListener("waiting", onWaiting);
-    video.addEventListener("canplay", onCanPlay);
-    video.addEventListener("ended", onEnded);
+    v.addEventListener("timeupdate", onTimeUpdate);
+    v.addEventListener("durationchange", onDurationChange);
+    v.addEventListener("play", onPlay);
+    v.addEventListener("pause", onPause);
+    v.addEventListener("waiting", onWaiting);
+    v.addEventListener("canplay", onCanPlay);
+    v.addEventListener("ended", onEnded);
     return () => {
-      video.removeEventListener("timeupdate", onTimeUpdate);
-      video.removeEventListener("durationchange", onDurationChange);
-      video.removeEventListener("play", onPlay);
-      video.removeEventListener("pause", onPause);
-      video.removeEventListener("waiting", onWaiting);
-      video.removeEventListener("canplay", onCanPlay);
-      video.removeEventListener("ended", onEnded);
+      v.removeEventListener("timeupdate", onTimeUpdate);
+      v.removeEventListener("durationchange", onDurationChange);
+      v.removeEventListener("play", onPlay);
+      v.removeEventListener("pause", onPause);
+      v.removeEventListener("waiting", onWaiting);
+      v.removeEventListener("canplay", onCanPlay);
+      v.removeEventListener("ended", onEnded);
     };
-  }, [video]);
+  }, []);
 
   const togglePlayRef = useRef<() => void>(() => {});
 
@@ -352,7 +355,7 @@ export default function NetflixPlayer({
         className="relative flex-1 flex items-center justify-center min-h-0 cursor-pointer"
         onClick={() => {
           if (isMobile) {
-            setShowControls(true);
+            setShowControls((prev) => !prev);
             resetHideTimer();
             return;
           }
@@ -373,7 +376,7 @@ export default function NetflixPlayer({
           onClick={(e) => {
             e.stopPropagation();
             if (isMobile) {
-              setShowControls(true);
+              setShowControls((prev) => !prev);
               resetHideTimer();
               return;
             }
@@ -391,16 +394,16 @@ export default function NetflixPlayer({
             />
           ))}
         </video>
-        {/* ספינר טעינה – לא חוסם לחיצות על כפתור ההפעלה */}
-        {isLoading && (
+        {/* ספינר טעינה – רק בזמן טעינה אמיתי, לא חוסם פקדים */}
+        {isLoading && !isPlaying && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none z-10">
             <div className="w-14 h-14 border-4 border-flexliner-red border-t-transparent rounded-full animate-spin" />
           </div>
         )}
-        {/* Center play/pause overlay – תמיד לחיץ כשלא מנגן */}
+        {/* Center play – רק כשלא מנגן ופקדים גלויים; ה-wrapper לא חוסם לחיצות על הפקדים */}
         <div
-          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 z-20 ${
-            showControls && !isPlaying ? "opacity-100" : "opacity-0 pointer-events-none"
+          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 z-20 pointer-events-none ${
+            showControls && !isPlaying ? "opacity-100" : "opacity-0"
           }`}
         >
           <button
@@ -409,7 +412,7 @@ export default function NetflixPlayer({
               e.stopPropagation();
               togglePlay();
             }}
-            className="w-20 h-20 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors border border-white/30 touch-manipulation"
+            className="w-20 h-20 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors border border-white/30 touch-manipulation pointer-events-auto"
             aria-label={isPlaying ? "השהה" : "הפעל"}
           >
             <Play className="w-10 h-10 text-white mr-1" fill="currentColor" />
@@ -418,11 +421,11 @@ export default function NetflixPlayer({
         {/* מובייל: כשמנגן בלי פקדים – לחיצה מציגה פקדים + כפתור השהה (לא עוצרת מיד) */}
         {isPlaying && !showControls && (
           <div
-            className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-20 touch-manipulation"
+            className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-20 touch-manipulation pointer-events-none"
             onClick={(e) => {
               e.stopPropagation();
               if (isMobile) {
-                setShowControls(true);
+                setShowControls((prev) => !prev);
                 resetHideTimer();
                 return;
               }
@@ -435,7 +438,7 @@ export default function NetflixPlayer({
                 e.stopPropagation();
                 togglePlay();
               }}
-              className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center"
+              className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center pointer-events-auto"
               aria-label="השהה"
             >
               <Pause className="w-8 h-8 text-white" />
@@ -444,9 +447,9 @@ export default function NetflixPlayer({
         )}
       </div>
 
-      {/* Top bar */}
+      {/* Top bar – מעל שכבת הכפתור המרכזי כדי שהפקדים יהיו לחיצים */}
       <div
-        className={`absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-300 ${
+        className={`absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-300 z-30 ${
           showControls ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
@@ -465,9 +468,9 @@ export default function NetflixPlayer({
         </div>
       </div>
 
-      {/* Bottom controls */}
+      {/* Bottom controls – מעל שכבת הכפתור המרכזי */}
       <div
-        className={`absolute bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-black/90 to-transparent transition-opacity duration-300 ${
+        className={`absolute bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-black/90 to-transparent transition-opacity duration-300 z-30 ${
           showControls ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >

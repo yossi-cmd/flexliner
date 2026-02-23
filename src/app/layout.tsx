@@ -16,10 +16,10 @@ export default function RootLayout({
     <html lang="he" dir="rtl">
       <body className="antialiased min-h-screen bg-flexliner-black">
         <Providers>{children}</Providers>
+        <footer>
+          <p className="text-center text-white/50 text-sm">נבנה על ידי יוסי ביטון, למטרות בידור בלבד, ולא על מנת לזלזל ברב מנחם אדרי צדיק יסוד עולם ח״ו.</p>
+        </footer>
       </body>
-      <footer>
-        <p className="text-center text-white/50 text-sm">נבנה על ידי יוסי ביטון, למטרות בידור בלבד, ולא על מנת לזלזל ברב מנחם אדרי צדיק יסוד עולם ח״ו.</p>
-      </footer>
     </html>
   );
 }
