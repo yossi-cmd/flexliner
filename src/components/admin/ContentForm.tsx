@@ -34,6 +34,9 @@ export default function ContentForm({ contentId, onSaved, onCancel }: Props) {
   });
   const [newSubSrc, setNewSubSrc] = useState("");
   const [editSubtitleIndex, setEditSubtitleIndex] = useState<number | null>(null);
+  const [createSubtitleOpen, setCreateSubtitleOpen] = useState(false);
+  const [createSubtitleLabel, setCreateSubtitleLabel] = useState("עברית");
+  const [createSubtitleLang, setCreateSubtitleLang] = useState("he");
 
   const base = typeof window !== "undefined" ? "" : process.env.NEXT_PUBLIC_APP_URL || "";
 
@@ -249,6 +252,7 @@ export default function ContentForm({ contentId, onSaved, onCancel }: Props) {
           {editSubtitleIndex !== null && form.subtitleTracks[editSubtitleIndex] && (
             <SubtitleEditorModal
               track={form.subtitleTracks[editSubtitleIndex]}
+              videoUrl={form.type === "movie" ? form.videoUrl || undefined : undefined}
               onSave={(newSrc) => {
                 setForm((p) => ({
                   ...p,
@@ -259,6 +263,20 @@ export default function ContentForm({ contentId, onSaved, onCancel }: Props) {
                 setEditSubtitleIndex(null);
               }}
               onClose={() => setEditSubtitleIndex(null)}
+            />
+          )}
+          {createSubtitleOpen && (
+            <SubtitleEditorModal
+              track={{ label: createSubtitleLabel, lang: createSubtitleLang, src: "" }}
+              videoUrl={form.type === "movie" ? form.videoUrl || undefined : undefined}
+              onSave={(newSrc) => {
+                setForm((p) => ({
+                  ...p,
+                  subtitleTracks: [...p.subtitleTracks, { label: createSubtitleLabel, lang: createSubtitleLang, src: newSrc }],
+                }));
+                setCreateSubtitleOpen(false);
+              }}
+              onClose={() => setCreateSubtitleOpen(false)}
             />
           )}
           <div className="flex flex-wrap gap-2 mb-2 items-end">
@@ -286,8 +304,8 @@ export default function ContentForm({ contentId, onSaved, onCancel }: Props) {
             <button
               type="button"
               onClick={() => {
-                const label = (document.getElementById("st-label") as HTMLInputElement)?.value?.trim();
-                const lang = (document.getElementById("st-lang") as HTMLInputElement)?.value?.trim();
+                const label = (document.getElementById("st-label") as HTMLInputElement)?.value?.trim() || createSubtitleLabel;
+                const lang = (document.getElementById("st-lang") as HTMLInputElement)?.value?.trim() || createSubtitleLang;
                 if (!label || !lang || !newSubSrc.trim()) return;
                 setForm((p) => ({ ...p, subtitleTracks: [...p.subtitleTracks, { label, lang, src: newSubSrc.trim() }] }));
                 (document.getElementById("st-label") as HTMLInputElement).value = "";
@@ -297,6 +315,17 @@ export default function ContentForm({ contentId, onSaved, onCancel }: Props) {
               className="px-3 py-1.5 bg-white/20 rounded text-sm"
             >
               הוסף כתוביות
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCreateSubtitleLabel((document.getElementById("st-label") as HTMLInputElement)?.value?.trim() || "עברית");
+                setCreateSubtitleLang((document.getElementById("st-lang") as HTMLInputElement)?.value?.trim() || "he");
+                setCreateSubtitleOpen(true);
+              }}
+              className="px-3 py-1.5 bg-flexliner-red/80 hover:bg-flexliner-red rounded text-sm"
+            >
+              צור קובץ בעורך
             </button>
           </div>
         </div>

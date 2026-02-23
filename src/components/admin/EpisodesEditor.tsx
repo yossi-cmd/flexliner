@@ -161,6 +161,7 @@ function EpisodeRow({
   const [tracks, setTracks] = useState<SubtitleTrack[]>(() => parseSubtitleTracks(episode.subtitleTracks));
   const [saving, setSaving] = useState(false);
   const [editTrackIndex, setEditTrackIndex] = useState<number | null>(null);
+  const [createTrackOpen, setCreateTrackOpen] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [newLang, setNewLang] = useState("");
   const [newSrc, setNewSrc] = useState("");
@@ -228,6 +229,7 @@ function EpisodeRow({
           {editTrackIndex !== null && tracks[editTrackIndex] && (
             <SubtitleEditorModal
               track={tracks[editTrackIndex]}
+              videoUrl={episode.videoUrl}
               onSave={(newSrc) => {
                 setTracks((p) =>
                   p.map((t, j) => (j === editTrackIndex ? { ...t, src: newSrc } : t))
@@ -235,6 +237,17 @@ function EpisodeRow({
                 setEditTrackIndex(null);
               }}
               onClose={() => setEditTrackIndex(null)}
+            />
+          )}
+          {createTrackOpen && (
+            <SubtitleEditorModal
+              track={{ label: newLabel.trim() || "עברית", lang: newLang.trim() || "he", src: "" }}
+              videoUrl={episode.videoUrl}
+              onSave={(newSrc) => {
+                setTracks((p) => [...p, { label: newLabel.trim() || "עברית", lang: newLang.trim() || "he", src: newSrc }]);
+                setCreateTrackOpen(false);
+              }}
+              onClose={() => setCreateTrackOpen(false)}
             />
           )}
           <div className="flex flex-wrap gap-2 mb-2 items-end">
@@ -273,6 +286,13 @@ function EpisodeRow({
               className="px-2 py-1 bg-white/20 rounded text-sm"
             >
               הוסף
+            </button>
+            <button
+              type="button"
+              onClick={() => setCreateTrackOpen(true)}
+              className="px-2 py-1 bg-flexliner-red/80 hover:bg-flexliner-red rounded text-sm"
+            >
+              צור קובץ בעורך
             </button>
           </div>
           <button
