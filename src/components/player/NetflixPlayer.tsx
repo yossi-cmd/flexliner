@@ -140,13 +140,34 @@ export default function NetflixPlayer({
     };
   }, [video]);
 
+  const togglePlayRef = useRef<() => void>(() => {});
+
+  const togglePlay = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      const p = v.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(() => {
+          if (isMobile && containerRef.current && !document.fullscreenElement) {
+            containerRef.current.requestFullscreen().then(() => v.play()).catch(() => {});
+          }
+        });
+      }
+    } else {
+      v.pause();
+    }
+  }, [isMobile]);
+
+  togglePlayRef.current = togglePlay;
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (!videoRef.current) return;
       switch (e.key) {
         case " ":
           e.preventDefault();
-          togglePlay();
+          togglePlayRef.current();
           break;
         case "f":
         case "F":
@@ -178,28 +199,12 @@ export default function NetflixPlayer({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [togglePlay]);
-
-  const togglePlay = useCallback(() => {
-    if (!video) return;
-    if (video.paused) {
-      const p = video.play();
-      if (p && typeof p.catch === "function") {
-        p.catch(() => {
-          // לעיתים במובייל (iOS) נדרש fullscreen לפני הפעלה
-          if (isMobile && containerRef.current && !document.fullscreenElement) {
-            containerRef.current.requestFullscreen().then(() => video.play()).catch(() => {});
-          }
-        });
-      }
-    } else {
-      video.pause();
-    }
-  }, [video, isMobile]);
+  }, []);
 
   const seek = (delta: number) => {
-    if (!video) return;
-    video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + delta));
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + delta));
     resetHideTimer();
   };
 
